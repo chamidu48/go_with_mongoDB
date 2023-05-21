@@ -12,14 +12,16 @@ import (
 
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type User struct {
-	Username string `bson:"username"`
-	Email    string `bson:"email"`
-	Password string `bson:"password"`
+	UserId   primitive.ObjectID `bson:"_id"`
+	Username string             `bson:"username"`
+	Email    string             `bson:"email"`
+	Password string             `bson:"password"`
 }
 
 // --add user--
@@ -56,11 +58,43 @@ func deleteUser(c echo.Context, client *mongo.Client) error {
 	return c.String(http.StatusOK, fmt.Sprintf(" %v Document deleted with Username: %s\n", result.DeletedCount, username))
 }
 
-// --update user--
-func updateUser(c echo.Context) error {
-	// User ID from path `users/:id`
-	id := c.Param("id")
-	return c.String(http.StatusOK, id)
+// --update username--
+func updateUser(c echo.Context, client *mongo.Client) error {
+
+	username := c.QueryParam("username")
+	newname := c.QueryParam("newname")
+
+	coll := client.Database("UserDB").Collection("Users")
+
+	//--get userID--
+	filteru := bson.D{{"username", username}}
+	var resultu User
+	var err = coll.FindOne(context.TODO(), filteru).Decode(&resultu)
+
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			// This error means your query did not match any documents.
+			return c.String(http.StatusOK, fmt.Sprint("no documents found"))
+		}
+		panic(err)
+	}
+	if err != nil {
+		panic(err)
+	}
+
+	id, _ := primitive.ObjectIDFromHex(resultu.UserId.String())
+	filter := bson.D{{"_id", id}}
+	update := bson.D{{"$set", bson.D{{"username", newname}}}}
+
+	result, err := coll.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		panic(err)
+	}
+	output, err := json.MarshalIndent(result, "", "    ")
+	if err != nil {
+		panic(err)
+	}
+	return c.String(http.StatusOK, string(output))
 }
 
 // --get user--
@@ -120,7 +154,9 @@ func main() {
 	})
 
 	//--change user details--
-	e.PUT("/update", updateUser)
+	e.PUT("/update", func(c echo.Context) error {
+		return updateUser(c, client)
+	})
 
 	//--get a user--
 	e.GET("/get", func(c echo.Context) error {
