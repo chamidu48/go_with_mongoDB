@@ -62,5 +62,10 @@ func main() {
 	e.DELETE("/delete", func(c echo.Context) error {
 		return uc.DeleteUser(c)
 	})
+
+	//--code generation using text/templates--
+	e.GET("/generate", func(c echo.Context) error {
+		return uc.Generate(c)
+	})
 	e.Logger.Fatal(e.Start(":1323"))
 }

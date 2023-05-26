@@ -6,6 +6,9 @@ import (
 	"fmt"
 	"net/http"
 
+	"os"
+	"text/template"
+
 	"github.com/chamidu48/go_with_mongoDB/models"
 	"github.com/labstack/echo/v4"
 	"go.mongodb.org/mongo-driver/bson"
@@ -120,4 +123,54 @@ func (uc UserController) DeleteUser(c echo.Context) error {
 		panic(err)
 	}
 	return c.String(http.StatusOK, fmt.Sprintf(" %v Document deleted with Username: %s\n", result.DeletedCount, username))
+}
+
+// --code generarion--
+func (uc UserController) Generate(c echo.Context) error {
+	var template_model models.TemplateModel
+	if err := c.Bind(&template_model); err != nil {
+		return err
+	}
+
+	main_template_path := "D:/Go/Go with mongoDB/templates/main.txt"
+	model_template_path := "D:/Go/Go with mongoDB/templates/model.txt"
+	controller_template_path := "D:/Go/Go with mongoDB/templates/controller.txt"
+
+	//--init the templates--
+	main_temp, err := template.New("main.txt").ParseFiles(main_template_path)
+	if err != nil {
+		return err
+	}
+
+	model_temp, err := template.New("model.txt").ParseFiles(model_template_path)
+	if err != nil {
+		return err
+	}
+
+	controller_temp, err := template.New("controller.txt").ParseFiles(controller_template_path)
+	if err != nil {
+		return err
+	}
+
+	//--executing the templates--
+	err1 := main_temp.Execute(os.Stdout, template_model)
+	if err1 != nil {
+		return err1
+	}
+
+	fmt.Println("\n")
+
+	err2 := model_temp.Execute(os.Stdout, template_model)
+	if err2 != nil {
+		return err1
+	}
+
+	fmt.Println("\n")
+
+	err3 := controller_temp.Execute(os.Stdout, template_model)
+	if err3 != nil {
+		return err1
+	}
+
+	return c.String(http.StatusOK, string("Done"))
 }
