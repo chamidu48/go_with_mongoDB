@@ -6,9 +6,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"os"
-	"text/template"
-
 	"github.com/chamidu48/go_with_mongoDB/models"
 	"github.com/labstack/echo/v4"
 	"go.mongodb.org/mongo-driver/bson"
@@ -123,72 +120,4 @@ func (uc UserController) DeleteUser(c echo.Context) error {
 		panic(err)
 	}
 	return c.String(http.StatusOK, fmt.Sprintf(" %v Document deleted with Username: %s\n", result.DeletedCount, username))
-}
-
-// --code generarion--
-func (uc UserController) Generate(c echo.Context) error {
-	var templateModel models.TemplateModel
-	if err := c.Bind(&templateModel); err != nil {
-		return err
-	}
-
-	mainTemplatePath := "D:/Go/Go with mongoDB/templates/main.txt"
-	modelTemplatePath := "D:/Go/Go with mongoDB/templates/model.txt"
-	controllerTemplatePath := "D:/Go/Go with mongoDB/templates/controller.txt"
-
-	// Initialize the templates
-	mainTemp, err := template.ParseFiles(mainTemplatePath)
-	if err != nil {
-		return err
-	}
-
-	modelTemp, err := template.ParseFiles(modelTemplatePath)
-	if err != nil {
-		return err
-	}
-
-	controllerTemp, err := template.ParseFiles(controllerTemplatePath)
-	if err != nil {
-		return err
-	}
-
-	// Execute the templates and write to files
-	mainOutputPath := "D:/Go/Go with mongoDB/generated_temp/main_generated.txt"
-	modelOutputPath := "D:/Go/Go with mongoDB/generated_temp/model_generated.txt"
-	controllerOutputPath := "D:/Go/Go with mongoDB/generated_temp/controller_generated.txt"
-
-	mainFile, err := os.Create(mainOutputPath)
-	if err != nil {
-		return err
-	}
-	defer mainFile.Close()
-
-	err = mainTemp.Execute(mainFile, templateModel)
-	if err != nil {
-		return err
-	}
-
-	modelFile, err := os.Create(modelOutputPath)
-	if err != nil {
-		return err
-	}
-	defer modelFile.Close()
-
-	err = modelTemp.Execute(modelFile, templateModel)
-	if err != nil {
-		return err
-	}
-
-	controllerFile, err := os.Create(controllerOutputPath)
-	if err != nil {
-		return err
-	}
-	defer controllerFile.Close()
-
-	err = controllerTemp.Execute(controllerFile, templateModel)
-	if err != nil {
-		return err
-	}
-
-	return c.String(http.StatusOK, "Code generation completed")
 }

@@ -6,7 +6,7 @@ import (
 
 	"net/http"
 
-	"github.com/chamidu48/go_with_mongoDB/controller"
+	"github.com/chamidu48/go_with_mongoDB/code_generated/generated_controller"
 	"github.com/labstack/echo/v4"
 
 	"github.com/joho/godotenv"
@@ -36,7 +36,7 @@ func main() {
 	}()
 
 	//--init the controller--
-	uc := controller.NewUserController(client)
+	uc := generated_controller.NewUserController(client)
 
 	//--echo--
 	e := echo.New()

@@ -6,6 +6,7 @@ import (
 
 	"net/http"
 
+	"github.com/chamidu48/go_with_mongoDB/code_generator"
 	"github.com/chamidu48/go_with_mongoDB/controller"
 	"github.com/labstack/echo/v4"
 
@@ -38,6 +39,9 @@ func main() {
 	//--init the controller--
 	uc := controller.NewUserController(client)
 
+	//--init code generator--
+	cg := code_generator.NewCodeGenerator(client)
+
 	//--echo--
 	e := echo.New()
 	e.GET("/", func(c echo.Context) error {
@@ -65,7 +69,7 @@ func main() {
 
 	//--code generation using text/templates--
 	e.GET("/generate", func(c echo.Context) error {
-		return uc.Generate(c)
+		return cg.Generate(c)
 	})
 	e.Logger.Fatal(e.Start(":1323"))
 }
