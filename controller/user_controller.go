@@ -121,3 +121,54 @@ func (uc UserController) DeleteUser(c echo.Context) error {
 	}
 	return c.String(http.StatusOK, fmt.Sprintf(" %v Document deleted with Username: %s\n", result.DeletedCount, username))
 }
+
+// --check username--
+func (uc UserController) CheckUser(c echo.Context) error {
+	var userAuth models.UserAuth
+	var user models.UserAuth
+
+	if err := c.Bind(&userAuth); err != nil {
+		return err
+	}
+	coll := uc.session.Database("UserDB").Collection("Users")
+	filter := bson.D{{"username", userAuth.Username}}
+
+	err := coll.FindOne(context.TODO(), filter).Decode(&user)
+
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return c.JSON(http.StatusOK, map[string]interface{}{
+				"message": "Not registered",
+			})
+		}
+		if userAuth.Password != user.Password {
+			return c.JSON(http.StatusOK, map[string]interface{}{
+				"message": "Incorrect password" + user.Password,
+			})
+		}
+	}
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"message": "success" + user.Password,
+	})
+}
+
+// --get all users--
+func (uc UserController) GetAll(c echo.Context) error {
+	// Access the "UserDB" database and "Users" collection
+	coll := uc.session.Database("UserDB").Collection("Users")
+
+	// Execute a find operation with an empty filter to retrieve all documents
+	cur, err := coll.Find(context.Background(), bson.D{})
+	if err != nil {
+		panic(err) // If there's an error, panic (halt the execution)
+	}
+
+	// Iterate over the cursor and append the results to a slice
+	var results []bson.M
+	if err := cur.All(context.Background(), &results); err != nil {
+		panic(err)
+	}
+
+	// Return the results as a response (assuming you want to return JSON)
+	return c.JSON(http.StatusOK, results)
+}

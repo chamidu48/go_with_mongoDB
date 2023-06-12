@@ -71,5 +71,16 @@ func main() {
 	e.GET("/generate", func(c echo.Context) error {
 		return cg.Generate(c)
 	})
+
+	//--check username and password--
+	e.POST("/login", func(c echo.Context) error {
+		return uc.CheckUser(c)
+	})
+
+	//--check username and password--
+	e.GET("/getall", func(c echo.Context) error {
+		return uc.GetAll(c)
+	})
 	e.Logger.Fatal(e.Start(":1323"))
+
 }
