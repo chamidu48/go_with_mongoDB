@@ -138,18 +138,16 @@ func (uc UserController) CheckUser(c echo.Context) error {
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			return c.JSON(http.StatusOK, map[string]interface{}{
-				"message": "Not registered",
-			})
-		}
-		if userAuth.Password != user.Password {
-			return c.JSON(http.StatusOK, map[string]interface{}{
-				"message": "Incorrect password" + user.Password,
+				"username": "",
+				"password": "",
 			})
 		}
 	}
-	return c.JSON(http.StatusOK, map[string]interface{}{
-		"message": "success" + user.Password,
-	})
+	output, err := json.MarshalIndent(user, "", "    ")
+	if err != nil {
+		panic(err)
+	}
+	return c.String(http.StatusOK, string(output))
 }
 
 // --get all users--
